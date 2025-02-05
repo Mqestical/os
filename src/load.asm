@@ -1,5 +1,6 @@
 org 0x7C00
 bits 16
+
 start:
     jmp main
 
@@ -9,6 +10,7 @@ main:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
+
     ; kernel at sec2
     mov ax, 2      ; sector 2
     mov bx, 0x1000 ; destination address (0x1000)
@@ -21,8 +23,7 @@ load_kernel:
     mov cl, 2      ; sector 2
     mov dh, 0      ; head 0
     mov dl, 0x80   ; drive 0 (floppy)
-    int 0x13
+    int 0x13       
     ret
 times 510-($-$$) db 0
 dw 0xAA55
-
