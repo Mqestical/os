@@ -1,54 +1,28 @@
 org 0x7C00
-bits 16 
-
-%define ENDL 0x0D, 0x0A
-
+bits 16
 start:
-jmp main
-
-; prints a string to the screen
-; params:
-; - ds:si points to the string
-puts:
- push si
- push ax
- 
- .loop:
- lodsb
- or al, al ; check whether next char is NULL or not.
- jz .done
- mov bh, 0
- mov ah, 0x0e
- int 0x10
- jmp .loop
- 
- .done:
- pop ax
- pop si
- ret 
- 
- 
-; NOTICE: Physical Address=Segment*16+Offset
+    jmp main
 
 main:
-; setup data segments
-mov ax, 0 ; can't write directly to segment registers.
-mov ds, ax
-mov es, ax 
-; setup stack
+    mov ax, 0
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0x7C00
+    ; kernel at sec2
+    mov ax, 2      ; sector 2
+    mov bx, 0x1000 ; destination address (0x1000)
+    call load_kernel
+    jmp 0x0000:0x1000
+load_kernel:
+    mov ah, 0x02
+    mov al, 1
+    mov ch, 0      ; cylinder 0
+    mov cl, 2      ; sector 2
+    mov dh, 0      ; head 0
+    mov dl, 0x80   ; drive 0 (floppy)
+    int 0x13
+    ret
+times 510-($-$$) db 0
+dw 0xAA55
 
-mov ss, ax
-mov sp, 0x7c00
-
-mov si, msg_hello
-call puts
-
-hlt
-
-.halt:
-jmp .halt
-
-msg_hello: db 'Hello, World!', ENDL, 0
-
-times 510-($_$$) db 0
-dw 0AA55h
